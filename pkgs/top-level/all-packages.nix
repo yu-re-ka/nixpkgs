@@ -768,7 +768,9 @@ with pkgs;
     cutoffPackages = [ newDependency ];
   };
 
-  replaceVars = callPackage ../build-support/replace-vars { };
+  replaceVarsWith = callPackage ../build-support/replace-vars/replace-vars-with.nix { };
+
+  replaceVars = callPackage ../build-support/replace-vars/replace-vars.nix { };
 
   replaceDirectDependencies = callPackage ../build-support/replace-direct-dependencies.nix { };
 
@@ -3350,19 +3352,6 @@ with pkgs;
 
   fastlane = callPackage ../tools/admin/fastlane { };
 
-  fontforge = lowPrio (callPackage ../tools/misc/fontforge {
-    inherit (darwin.apple_sdk.frameworks) Carbon Cocoa;
-    python = python3;
-  });
-  fontforge-gtk = fontforge.override {
-    withSpiro = true;
-    withGTK = true;
-    gtk3 = gtk3-x11;
-    inherit (darwin.apple_sdk.frameworks) Carbon Cocoa;
-  };
-
-  fontforge-fonttools = callPackage ../tools/misc/fontforge/fontforge-fonttools.nix { };
-
   fontmatrix = libsForQt5.callPackage ../applications/graphics/fontmatrix { };
 
   fox = callPackage ../development/libraries/fox {};
@@ -4680,7 +4669,7 @@ with pkgs;
 
   pakcs = callPackage ../development/compilers/pakcs { };
 
-  pandoc_3_5 = callPackage ../by-name/pa/pandoc/package.nix { selectPandocCLI = (p: p.pandoc-cli_3_5); };
+  pandoc_3_6 = callPackage ../by-name/pa/pandoc/package.nix { selectPandocCLI = (p: p.pandoc-cli_3_6); };
 
   paperwork = callPackage ../applications/office/paperwork/paperwork-gtk.nix { };
 
@@ -4767,9 +4756,7 @@ with pkgs;
     pinentry-tty
     pinentry-all;
 
-  pinentry_mac = callPackage ../tools/security/pinentry/mac.nix {
-    inherit (darwin.apple_sdk.frameworks) Cocoa;
-  };
+  pinentry_mac = callPackage ../tools/security/pinentry/mac.nix { };
 
   pingu = callPackage ../tools/networking/pingu {
     buildGoModule = buildGo122Module;
@@ -5649,9 +5636,7 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
-  xtreemfs = callPackage ../tools/filesystems/xtreemfs {
-    boost = boost179;
-  };
+  xtreemfs = callPackage ../tools/filesystems/xtreemfs { };
 
   xorriso = libisoburn;
 
@@ -8498,9 +8483,7 @@ with pkgs;
 
   travis = callPackage ../development/tools/misc/travis { };
 
-  tree-sitter = makeOverridable (callPackage ../development/tools/parsing/tree-sitter) {
-    inherit (darwin.apple_sdk.frameworks) Security CoreServices;
-  };
+  tree-sitter = makeOverridable (callPackage ../development/tools/parsing/tree-sitter) { };
 
   tree-sitter-grammars = recurseIntoAttrs tree-sitter.builtGrammars;
 
@@ -8673,6 +8656,8 @@ with pkgs;
   aws-sdk-cpp = callPackage ../development/libraries/aws-sdk-cpp {
     inherit (darwin.apple_sdk.frameworks) CoreAudio AudioToolbox;
   };
+
+  aws-spend-summary = haskellPackages.aws-spend-summary.bin;
 
   backlight-auto = callPackage ../by-name/ba/backlight-auto/package.nix {
     zig = buildPackages.zig_0_11;
@@ -11231,17 +11216,17 @@ with pkgs;
     faslExt = "fasl";
     flags = [ "--dynamic-space-size" "3000" ];
   };
-  sbcl_2_4_9 = wrapLisp {
-    pkg = callPackage ../development/compilers/sbcl { version = "2.4.9"; };
-    faslExt = "fasl";
-    flags = [ "--dynamic-space-size" "3000" ];
-  };
   sbcl_2_4_10 = wrapLisp {
     pkg = callPackage ../development/compilers/sbcl { version = "2.4.10"; };
     faslExt = "fasl";
     flags = [ "--dynamic-space-size" "3000" ];
   };
-  sbcl = sbcl_2_4_10;
+  sbcl_2_4_11 = wrapLisp {
+    pkg = callPackage ../development/compilers/sbcl { version = "2.4.11"; };
+    faslExt = "fasl";
+    flags = [ "--dynamic-space-size" "3000" ];
+  };
+  sbcl = sbcl_2_4_11;
 
   sbclPackages = recurseIntoAttrs sbcl.pkgs;
 
@@ -15422,9 +15407,10 @@ with pkgs;
 
   inherit (ocaml-ng.ocamlPackages) stog;
 
-  stumpwm = sbclPackages.stumpwm;
-
-  stumpwm-unwrapped = sbclPackages.stumpwm-unwrapped;
+  # Stumpwm is broken on SBCL 2.4.11, see
+  # https://github.com/NixOS/nixpkgs/pull/360320
+  stumpwm = sbcl_2_4_10.pkgs.stumpwm;
+  stumpwm-unwrapped = sbcl_2_4_10.pkgs.stumpwm-unwrapped;
 
   sublime3Packages = recurseIntoAttrs (callPackage ../applications/editors/sublime/3/packages.nix { });
 
