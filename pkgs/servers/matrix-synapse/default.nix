@@ -149,7 +149,7 @@ python3.pkgs.buildPythonApplication rec {
       mock
       parameterized
     ])
-    ++ lib.flatten (lib.attrValues optional-dependencies);
+    ++ lib.remove python3.pkgs.pysaml2 (lib.flatten (lib.attrValues optional-dependencies));
 
   doCheck = !stdenv.hostPlatform.isDarwin;
 
